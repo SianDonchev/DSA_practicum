@@ -1,5 +1,6 @@
 #pragma once
 #include <stdexcept>
+#include <fstream>
 
 template <typename T>
 class Deque
@@ -17,13 +18,14 @@ public:
 	void popFront();
 	void popBack();
 	bool isEmpty()const;
+	void print(std::ostream& ofs)const;
 
 	const T& front()const
 	{
 		if (isEmpty())
 			throw std::logic_error("Deque is empty!");
 
-		return deque[frontIndex];
+		return *deque[frontIndex];
 	}
 
 	const T& back()const
@@ -31,48 +33,34 @@ public:
 		if (isEmpty())
 			throw std::logic_error("Deque is empty!");
 
-		return deque[backIndex];
+		return *deque[backIndex];
 	}
 
 public:
 	const T& operator[](size_t index)const;
-	T& operator[](size_t index)const;
+	T& operator[](size_t index);
 
 private:
 	void copyFrom(const Deque<T>& other);
 	void clear();
 
-	void increaseBackIndex()
+	void decreaseIndex(size_t& index)
 	{
-		if (backIndex == (capacity - 1))
-			backIndex = 0;
+		if (index == 0)
+			index = capacity - 1;
 		else
-			++backIndex;
+			--index;
 	}
 
-	void decreaseBackIndex()
+	void increaseIndex(size_t& index)
 	{
-		if (backIndex == 0)
-			backIndex == capacity - 1;
+		if (index == capacity - 1)
+			index = 0;
 		else
-			--backIndex;
+			++index;
 	}
 
-	void decreaseFrontIndex()
-	{
-		if (frontIndex == 0)
-			frontIndex = capacity - 1;
-		else
-			--frontIndex;
-	}
 
-	void increaseFrontIndex()
-	{
-		if (frontIndex == capacity - 1)
-			frontIndex = 0;
-		else
-			++frontIndex;
-	}
 
 	void resize();
 
@@ -121,7 +109,7 @@ void Deque<T>::clear()
 {
 	for (size_t i = 0; i < size; ++i)
 	{
-		delete deque[i];
+		delete &(*this)[i];
 	}
 	delete[] deque;
 
@@ -129,7 +117,18 @@ void Deque<T>::clear()
 }
 
 template <typename T>
-Deque<T>::copyFrom(const Deque<T>& other)
+void Deque<T>::print(std::ostream& ofs)const
+{
+	for (size_t i = 0; i < size; ++i)
+	{
+		ofs << (*this)[i];
+	}
+
+	return;
+}
+
+template <typename T>
+void Deque<T>::copyFrom(const Deque<T>& other)
 {
 	deque = new T*[other.capacity];
 	
@@ -141,6 +140,9 @@ Deque<T>::copyFrom(const Deque<T>& other)
 		deque[i] = new T(other[i]);
 	}
 
+	this->frontIndex = 0;
+	this->backIndex = size - 1;
+
 	return;
 }
 
@@ -151,20 +153,20 @@ const T& Deque<T>::operator[](size_t index)const
 	{
 		throw std::out_of_range("Invalid index");
 	}
-	whichElement = (frontIndex + index) % size;
+	size_t whichElement = (frontIndex + index) % capacity;
 
 	return *(deque[whichElement]);
 }
 
-template <typenema T>
-T& Deque<T>::operator[](size_t index)const
+template <typename T>
+T& Deque<T>::operator[](size_t index)
 {
 	if (index >= size)
 	{
 		throw std::out_of_range("Invalid index");
 	}
 
-	whichElement = (frontIndex + index) % size;
+	size_t whichElement = (frontIndex + index) % capacity;
 
 	return *(deque[whichElement]);
 }
@@ -172,17 +174,17 @@ T& Deque<T>::operator[](size_t index)const
 template <typename T>
 void Deque<T>::resize()
 {
-	newCapacity = capacity == 0 ? 1 : (capacity * 2);
+	size_t newCapacity = capacity == 0 ? 1 : (capacity * 2);
 
 	T** tempDeque = new T*[newCapacity];
 
-	for (int i = 0; i < size; ++i)
+	for (size_t i = 0; i < size; ++i)
 	{
-		tempDeque[i] = (*this)[i];
+		tempDeque[i] = &(*this)[i];
 	}
 
 	frontIndex = 0;
-	backIndex = size - 1;
+	backIndex = size == 0 ? 0 : (size - 1);
 	
 	delete[] deque;
 	capacity = newCapacity;
@@ -197,7 +199,7 @@ void Deque<T>::pushBack(const T& el)
 		resize();
 	}
 	
-	increaseBackIndex();
+	increaseIndex(backIndex);
 	deque[backIndex] = new T(el);
 	++size;
 	
@@ -211,7 +213,7 @@ void Deque<T>::pushFront(const T& el)
 		resize();
 	}
 
-	decreaseFrontIndex();
+	decreaseIndex(frontIndex);
 	deque[frontIndex] = new T(el);
 	++size;
 }
@@ -229,7 +231,7 @@ void Deque<T>::popFront()
 		return;
 
 	delete deque[frontIndex];
-	increaseFrontIndex();
+	increaseIndex(frontIndex);
 
 	--size;
 
@@ -243,7 +245,7 @@ void Deque<T>::popBack()
 		return;
 
 	delete deque[backIndex];
-	decreaseBackIndex();
+	decreaseIndex(backIndex);
 
 	--size;
 
