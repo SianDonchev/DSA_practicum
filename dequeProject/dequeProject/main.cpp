@@ -1,40 +1,46 @@
 #include <iostream>
 #include "Deque.h"
 
+const int FOR_EXAMPLE = 10000;
+const int TO_REMOVE = 100;
+
 int main()
 {
-	Deque<int> d1;
-	d1.pushFront(3);
-	d1.pushFront(5);
-	d1.pushFront(8);
-	d1.pushBack(11);
-	d1.pushBack(132);
-	d1.pushFront(545);
-	d1.popBack();
-	d1.popBack();
-	d1.popBack();
+	Deque<int> example;
 
-	Deque<int> d2 = d1;
-
+	//add 10000 elements
+	for (int i = 0; i < FOR_EXAMPLE; ++i)
 	{
-		Deque<int> d3;
-		d3.pushBack(1);
-		d3 = d2;
-
-		d3.print(std::cout);
+		if (example.isEmpty())
+		{
+			example.pushBack(i);
+		}
+		//if i is a prime number add to the front
+		if (i % 2 == 0)
+		{
+			example.pushFront(i);
+		}
+		//else add to the back
+		else
+		{
+			example.pushBack(i);
+		}
 	}
-	std::cout << std::endl;
-	d1.print(std::cout);
-	std::cout << std::endl;
-	d2.print(std::cout);
-	std::cout << std::endl;
 
+	//if the "front" and the "back" are different from 0
+	if (example.front() != 0 && example.back() != 0)
+	{
+		//remove the first and last 50 elements
+		for (int i = 0; i < TO_REMOVE; ++i)
+		{
+			if (i % 2 == 0)
+				example.popBack();
+			else
+				example.popFront();
+		}
+	}
 
-	std::cout << d2.front();
-	std::cout << std::endl;
-	std::cout << d2.back();
-
-	d1 = d1;
+	example.print(std::cout);
 
 	return 0;
 }

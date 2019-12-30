@@ -121,7 +121,7 @@ void Deque<T>::print(std::ostream& ofs)const
 {
 	for (size_t i = 0; i < size; ++i)
 	{
-		ofs << (*this)[i];
+		ofs << (*this)[i] << " ";
 	}
 
 	return;
